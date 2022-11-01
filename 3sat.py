@@ -28,6 +28,7 @@ def dimacs_parser(in_data):
     for line in in_data:
         tokens = line.split()
         if len(tokens) != 0 and tokens[0] not in ("p", "c"):
+            # read the non-comment and non-problem lines
             for tok in tokens:
                 lit = int(tok)
                 maxvar = max(maxvar, abs(lit))
@@ -35,8 +36,8 @@ def dimacs_parser(in_data):
                     cnf.append(list())
                 else:
                     cnf[-1].append(lit)
-        # read the problem line
         elif len(tokens) != 0 and tokens[0] == "p":
+            # read the problem line
             for tok in tokens:
                 num_vars = int(tokens[2])
                 num_clauses = int(tokens[3])
@@ -47,7 +48,6 @@ def dimacs_parser(in_data):
     return cnf, num_vars, num_clauses
 
 
-# Approach 1: Brute Force / BDD
 def brute_force(cnf):
     # Brute Force
     # 1. Generate all possible assignments
@@ -88,7 +88,6 @@ def brute_force(cnf):
             return assignment
 
 
-# Approach 2: DPLL algorithm
 def dpll(cnf):
     # DPLL algorithm
     # 1. If the CNF is empty, return True
@@ -167,7 +166,7 @@ def remove_literal(cnf, lit):
 
 
 def main():
-    file = "3sat_benchmark_problems/sat_2000.cnf"
+    file = "3sat_benchmark_problems/cnf_gen_3_12.cnf"
     with open(file, "r") as f:
         cnf, num_var, num_clauses = dimacs_parser(f)
 
@@ -176,17 +175,17 @@ def main():
     print(f"Number of variables: {num_var}")
     print(f"Number of clauses: {num_clauses} \n")
 
-    # print("Brute Force:")
-    # start_time = time.time()
-    # assignment = brute_force(cnf)
-    # end_time = time.time()
-    # if assignment is not None:
-    #     print("Result: SATisfiable")
-    #     print("Assignment:", assignment)
-    # else:
-    #     print("Result: UNSATisfiable")
-    # print("Time taken:", end_time - start_time)
-    # print()
+    print("Brute Force:")
+    start_time = time.time()
+    assignment = brute_force(cnf)
+    end_time = time.time()
+    if assignment is not None:
+        print("Result: SATisfiable")
+        print("Assignment: ", assignment)
+    else:
+        print("Result: UNSATisfiable")
+    print("Time taken:", end_time - start_time)
+    print()
 
     print("DPLL:")
     start_time = time.time()
@@ -194,7 +193,7 @@ def main():
     end_time = time.time()
     if result:
         print("Result: SATisfiable")
-        print("Assignment:",)
+        print("Assignment: ", result)
     else:
         print("Result: UNSATisfiable")
     print("Time taken:", end_time - start_time)
