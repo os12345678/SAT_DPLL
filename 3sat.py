@@ -14,9 +14,7 @@
 #   a 0. Each non-zero number denotes a literal, with negative numbers being
 #   negative literals of that variable, and 0 being the terminator of a line.
 
-import itertools
 import random
-import readline
 import time
 
 
@@ -71,7 +69,6 @@ def brute_force(cnf):
     for assignment in assignments:
         # Check if each clause is satisfied
         for clause in cnf:
-            # Check if the clause is satisfied
             clause_satisfied = False
             for lit in clause:
                 if lit > 0 and assignment[lit - 1] == 1:
