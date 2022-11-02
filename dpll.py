@@ -1,3 +1,6 @@
+from copy import deepcopy
+
+
 def dimacs_parser(in_data):
     cnf = list()
     cnf.append(list())
@@ -23,12 +26,12 @@ def dimacs_parser(in_data):
     assert len(cnf[-1]) == 0
     cnf.pop()
 
-    return cnf, num_vars, num_clauses
+    return cnf
 
 
 def get_pure_literals(cnf):
     literals = dict()
-    pure_literals = dict()
+    pure_literals = tuple()
     for clause in cnf:
         for lit in clause:
             if lit not in literals:
@@ -37,7 +40,7 @@ def get_pure_literals(cnf):
                 literals[lit] += 1
     for lit in literals:
         if literals[lit] == 1:
-            pure_literals.add(lit)
+            pure_literals += (lit,)
     return pure_literals
 
 
@@ -49,22 +52,24 @@ def remove_pure_literal_clause(pure_literal, cnf):
     return cnf
 
 
-def dpll(cnf):
-    # print(cnf)
-    # get_pure_lit = get_pure_literals(cnf)
-    # print(get_pure_lit)
-    # get_pure_lit_clause = remove_pure_literal_clause(get_pure_lit, cnf)
-    # print(get_pure_lit_clause)
+def remove_unit_clause(cnf):
+    for clause in cnf:
+        if len(clause) == 1:
+            cnf.remove(clause)
+    return cnf
 
-    # while s contains a pure literal l:
-    #    get_pure_lit = get_pure_literals(cnf)
-    #    get_pure_lit_clause = remove_pure_literal_clause(get_pure_lit, cnf)
 
-    while (get_pure_literals(cnf)):
-        get_pure_lit = get_pure_literals(cnf)
-        get_pure_lit_clause = remove_pure_literal_clause(get_pure_lit, cnf)
-        cnf = get_pure_lit_clause
-        print(cnf)
+def dpll(cnf, lit):
+    remove_unit_clause(cnf)
+    remove_pure_literal_clause(
+        get_pure_literals(cnf), cnf)
+    if len(cnf) == 0:
+        return True
+    for clause in cnf:
+        if len(clause) == 0:
+            return False
+    branching_literal = cnf[0][0]
+    return dpll(cnf + [[branching_literal]]) or dpll(cnf + [[-branching_literal]])
 
 
 def main():
