@@ -17,11 +17,6 @@ def dimacs_parser(in_data):
                     cnf.append(list())
                 else:
                     cnf[-1].append(lit)
-        elif len(tokens) != 0 and tokens[0] == "p":
-            # read the problem line
-            for tok in tokens:
-                num_vars = int(tokens[2])
-                num_clauses = int(tokens[3])
 
     assert len(cnf[-1]) == 0
     cnf.pop()
@@ -59,7 +54,7 @@ def remove_unit_clause(cnf):
     return cnf
 
 
-def dpll(cnf, lit):
+def dpll(cnf):
     remove_unit_clause(cnf)
     remove_pure_literal_clause(
         get_pure_literals(cnf), cnf)
@@ -68,12 +63,11 @@ def dpll(cnf, lit):
     for clause in cnf:
         if len(clause) == 0:
             return False
-    branching_literal = cnf[0][0]
-    return dpll(cnf + [[branching_literal]]) or dpll(cnf + [[-branching_literal]])
+    return dpll(cnf)
 
 
 def main():
-    file = "3sat_benchmark_problems/cnf_gen_3_12.cnf"
+    file = "3sat_benchmark_problems/sat_20.cnf"
     with open(file, "r") as f:
         cnf = dimacs_parser(f)
     dpll(cnf)
