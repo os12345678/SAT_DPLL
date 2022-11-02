@@ -5,25 +5,33 @@ import argparse
 import random
 import os
 
-parser = argparse.ArgumentParser(
-    description='Generate a valid cnf file used for 3sat.py')
 
-parser.add_argument('--variables', '-v', dest='number_of_variables', default=3, type=int, required=False,
-                    help="Number of variable.")
-parser.add_argument('--clauses', '-c', dest='number_of_clauses', default=5, type=int, required=False,
-                    help="Number of clauses.")
+def generate_cnf(num_var, num_clauses):
+    # parser = argparse.ArgumentParser(
+    #     description='Generate a valid cnf file used for 3sat.py')
 
-args = parser.parse_args()
+    # parser.add_argument('--variables', '-v', dest='number_of_variables', default=3, type=int, required=False,
+    #                     help="Number of variable.")
+    # parser.add_argument('--clauses', '-c', dest='number_of_clauses', default=5, type=int, required=False,
+    #                     help="Number of clauses.")
 
-filename = f"3sat_benchmark_problems/cnf_gen_{args.number_of_variables}_{args.number_of_clauses}.cnf"
+    # args = parser.parse_args()
 
-with open(filename, 'w') as f:
-    f.write(f"c User generated cnf file\n")
-    f.write(f"p cnf {args.number_of_variables} {args.number_of_clauses}\n")
-    for i in range(args.number_of_clauses):
-        # Generate a random clause
-        clause = [random.randint(1, args.number_of_variables)
-                  for i in range(3)]
-        # Randomly negate a literal
-        clause[random.randint(0, 2)] *= -1
-        f.write(f"{clause[0]} {clause[1]} {clause[2]} 0 \n")
+    filename = f"3sat_benchmark_problems/cnf_gen_{num_var}_{num_clauses}.cnf"
+
+    with open(filename, 'w') as f:
+        f.write(f"c User generated cnf file\n")
+        f.write(f"p cnf {num_var} {num_clauses}\n")
+        for i in range(num_clauses):
+            # Generate a random clause
+            clause = [random.randint(1, num_var)
+                      for i in range(3)]
+            # Randomly negate a literal
+            clause[random.randint(0, 2)] *= -1
+            f.write(f"{clause[0]} {clause[1]} {clause[2]} 0 \n")
+
+    return filename
+
+
+if __name__ == "__main__":
+    generate_cnf()
