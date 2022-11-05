@@ -1,5 +1,5 @@
 import argparse
-from dpll import dimacs_parser
+from dimacs_parser import dimacs_parser
 
 parser = argparse.ArgumentParser(
     description="Solve a CNF file using a SAT solver")
@@ -12,9 +12,9 @@ args = parser.parse_args()
 if args.file != "random":
     file = args.file
     with open(file, "r") as f:
-        cnf = dimacs_parser(f)
+        cnf = dpll.dimacs_parser(f)
 else:
-    import cnf_generator
+    import CNF.cnf_generator as cnf_generator
     print("Please enter [num_variables] [num_clauses]: ", end="")
     num_var, num_clauses = map(int, input().split())
 
@@ -23,8 +23,11 @@ else:
 
     with open(filename, "r") as f:
         cnf = dimacs_parser(f)
+        print(cnf)
 
 if args.method == "dpll":
-    from dpll import dpll
+    from Solvers.dpll import dpll
+    solver = dpll(cnf, cnf[0][0])
+    # solver.dpll(cnf, cnf[0][0])
 elif args.method == "cdcl":
-    from cdcl import cdcl
+    from Solvers.cdcl import cdcl

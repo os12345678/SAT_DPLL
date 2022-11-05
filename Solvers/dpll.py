@@ -1,27 +1,7 @@
-from copy import deepcopy
-
-
-def dimacs_parser(in_data):
-    cnf = list()
-    cnf.append(list())
-    maxvar = 0
-
-    for line in in_data:
-        tokens = line.split()
-        if len(tokens) != 0 and tokens[0] not in ("p", "c"):
-            # read the non-comment and non-problem lines
-            for tok in tokens:
-                lit = int(tok)
-                maxvar = max(maxvar, abs(lit))
-                if lit == 0:
-                    cnf.append(list())
-                else:
-                    cnf[-1].append(lit)
-
-    assert len(cnf[-1]) == 0
-    cnf.pop()
-
-    return cnf
+from collections import deque
+import os
+import time
+import sys
 
 
 def get_pure_literals(cnf):
@@ -54,7 +34,7 @@ def remove_unit_clause(cnf):
     return cnf
 
 
-def dpll(cnf):
+def dpll(cnf, branching_literal):
     remove_unit_clause(cnf)
     remove_pure_literal_clause(
         get_pure_literals(cnf), cnf)
@@ -63,15 +43,8 @@ def dpll(cnf):
     for clause in cnf:
         if len(clause) == 0:
             return False
-    return dpll(cnf)
+    # n-th step
+    # choose a literal
+    literal = cnf[0][0]
 
-
-def main():
-    file = "3sat_benchmark_problems/sat_20.cnf"
-    with open(file, "r") as f:
-        cnf = dimacs_parser(f)
-    dpll(cnf)
-
-
-if __name__ == "__main__":
-    main()
+    return dpll(cnf, literal)  # recursing way too much

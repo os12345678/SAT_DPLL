@@ -17,7 +17,7 @@ def generate_cnf(num_var, num_clauses):
 
     # args = parser.parse_args()
 
-    filename = f"3sat_benchmark_problems/cnf_gen_{num_var}_{num_clauses}.cnf"
+    filename = f"CNF/Examples/cnf_gen_{num_var}_{num_clauses}.cnf"
 
     with open(filename, 'w') as f:
         f.write(f"c User generated cnf file\n")
