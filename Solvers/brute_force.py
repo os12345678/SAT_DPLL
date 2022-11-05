@@ -31,7 +31,8 @@ def brute_force(cnf):
                     break
             # If the clause is not satisfied, move on to the next assignment
             if not clause_satisfied:
-                break
+                return "UNSAT"
         # If all clauses are satisfied, return the assignment
         else:
-            return assignment
+            # return assignment
+            return "SAT"

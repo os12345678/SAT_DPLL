@@ -1,10 +1,11 @@
 import argparse
+import time
 from dimacs_parser import dimacs_parser
 
 parser = argparse.ArgumentParser(
     description="Solve a CNF file using a SAT solver")
 parser.add_argument("-m", "--method", help="SAT method to use",
-                    choices=["dpll", "cdcl"], required=True)
+                    choices=["dpll", "cdcl", "brute"], required=True)
 parser.add_argument("-f", "--file", help="CNF file to solve",
                     required=False, default="random")
 args = parser.parse_args()
@@ -12,7 +13,7 @@ args = parser.parse_args()
 if args.file != "random":
     file = args.file
     with open(file, "r") as f:
-        cnf = dpll.dimacs_parser(f)
+        cnf = dimacs_parser(f)
 else:
     import CNF.cnf_generator as cnf_generator
     print("Please enter [num_variables] [num_clauses]: ", end="")
@@ -23,11 +24,17 @@ else:
 
     with open(filename, "r") as f:
         cnf = dimacs_parser(f)
-        print(cnf)
 
 if args.method == "dpll":
-    from Solvers.dpll import dpll
-    solver = dpll(cnf, cnf[0][0])
-    # solver.dpll(cnf, cnf[0][0])
+    from Solvers.dpll_update import dpll
+    dpll_solver = dpll(cnf)
+    print(dpll_solver)
 elif args.method == "cdcl":
     from Solvers.cdcl import cdcl
+elif args.method == "brute":
+    from Solvers.brute_force import brute_force
+    print(cnf)
+    start = time.time()
+    brute_solver = brute_force(cnf)
+    print(time.time() - start)
+    print(brute_solver)
