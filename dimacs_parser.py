@@ -1,20 +1,14 @@
 @staticmethod
 def dimacs_parser(in_data):
     cnf = list()
-    cnf.append(list())
+    # cnf.append(tuple())
 
     for line in in_data:
         tokens = line.split()
-        if len(tokens) != 0 and tokens[0] not in ("p", "c"):
-            # read the non-comment and non-problem lines
-            for tok in tokens:
-                lit = int(tok)
-                if lit == 0:
-                    cnf.append(list())
-                else:
-                    cnf[-1].append(lit)
-
-    assert len(cnf[-1]) == 0
-    cnf.pop()
+        if tokens[0] == "%":
+            break
+        if len(tokens) == 0 or tokens[0] in ("p", "c"):
+            continue
+        cnf.append(tuple(int(tok) for tok in tokens if tok != "0"))
 
     return cnf
