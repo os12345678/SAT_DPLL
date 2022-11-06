@@ -28,7 +28,7 @@ else:
 if args.method == "dpll":
     from Solvers.dpll_update import dpll
     dpll_solver = dpll(cnf)
-    print(dpll_solver)
+    print("res", dpll_solver)
 elif args.method == "cdcl":
     from Solvers.cdcl import cdcl
 elif args.method == "brute":

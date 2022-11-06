@@ -14,7 +14,7 @@ def brute_force(cnf):
     for i in range(2**num_vars):
         assignments.append(list())
         for j in range(num_vars):
-            # right shift i by j bits and check if the last bit is 1
+            # num_vars! assignments
             assignments[i].append((i >> j) & 1)
 
     # Check if each assignment satisfies the CNF

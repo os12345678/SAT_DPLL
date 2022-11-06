@@ -1,7 +1,6 @@
 @staticmethod
 def dimacs_parser(in_data):
     cnf = list()
-    # cnf.append(tuple())
 
     for line in in_data:
         tokens = line.split()

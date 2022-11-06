@@ -1,11 +1,26 @@
-def getsatmap(clauses):
-    map = dict()
-    for clause in clauses:
-        for x in clause:
-            if x not in map:
-                map[x] = set()
-            map[x].add(clause)
-    return map
+# DPLL: https://en.wikipedia.org/wiki/DPLL_algorithm
+
+# function DPLL(cnf) returns true/false
+# input: a set of clauses (cnf)
+# output: a truth value indicating whether cnf is satisfiable
+
+# def dpll(cnf):
+#   while there is a unit clause {l} in cnf:
+#       unit propagate
+#   while there is a literal l that occurs pure in cnf:
+#       pure literal eliminate
+#   if cnf is empty:
+#       return true
+#   if cnf contains an empty clause:
+#       return false
+#   choose a branching literal l
+#   return DPLL(cnf and {l}) or DPLL(cnf and {-l})
+
+def pure_lit_elim(cnf, map):
+    for var in [x for x in map if len(map[x]) == 0]:
+        clause = frozenset((-var,))
+        cnf.add(clause)
+        map[-var].add(clause)
 
 
 def unit_prop(clauses, map):
@@ -35,43 +50,35 @@ def unit_prop(clauses, map):
     return solvedvars
 
 
-def pure_lit_elim(clauses, map):
-    solvedvars = []
-    for var in [x for x in map if len(map[x]) == 0]:
-        clauses.add(frozenset({-var}))
-        solvedvars.append(var)
-    return solvedvars
+def getsatmap(cnf):
+    map = dict()
+    for clause in cnf:
+        for x in clause:
+            if x not in map:
+                map[x] = set()
+            map[x].add(clause)
+    return map
 
 
-def tauntology(clauses, map):
-    for m in [m for m in map if m > 0]:
-        for c in [c for c in map[m] if c in map[-m]]:
-            clauses.remove(c)
-            for y in c:
-                map[y].remove(c)
-        if len(map[m]) == 0 and len(map[-m]) == 0:
-            del map[m]
-            del map[-m]
-
-
-def dpll(clauses):
-    clauses = {frozenset(c) for c in clauses}
-    map = getsatmap(clauses)
-    print(map)
-    solvedvars = []
+def dpllr(cnf, map, solvedvars):
+    if len(cnf) == 0:
+        return True, solvedvars
+    elif any(len(clause) == 0 for clause in cnf):
+        return False, None
     while True:
-        solvedvars.extend(unit_prop(clauses, map))
-        solvedvars.extend(pure_lit_elim(clauses, map))
-        tauntology(clauses, map)
-        if len(clauses) == 0:
-            return "SAT"
-        if len(clauses) == 1 and len(next(iter(clauses))) == 0:
-            return "UNSAT"
-        if len(clauses) == 0 or len(map) == 0:
-            break
+        pure_lit_elim(cnf, map)
+        s = unit_prop(cnf, map)
+        solvedvars.extend(s)
+        # if len(s) == 0:
+        #     break
         x = next(iter(map))
-        clauses.add(frozenset({x}))
-        clauses.add(frozenset({-x}))
-        map[x] = set()
-        map[-x] = set()
-    return "SAT"
+        return dpllr(cnf and {x}, map, solvedvars + [x]) or dpllr(cnf and {-x}, map, solvedvars + [-x])
+
+
+def dpll(cnf):
+    map = getsatmap(cnf)
+    return dpllr(cnf, map, [])
+
+
+a = (1, 2, 3)
+print(len(a))
