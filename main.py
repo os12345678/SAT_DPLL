@@ -26,12 +26,12 @@ else:
         cnf = dimacs_parser(f)
 
 if args.method == "dpll":
-    from Solvers.dpll_zc import recursive_dpll
-    from tests.tests import test_result
-    dpll_solver = recursive_dpll(cnf)
-    print(dpll_solver)
-    pysat_result = test_result(cnf)
-    print(pysat_result)
+    from Solvers.dpll_os_new import dpll
+    from tests.test import test_result
+    dpll_solver = dpll(cnf)
+    # print(dpll_solver)
+    # pysat_result = test_result(cnf)
+    # print(pysat_result)
 
 elif args.method == "cdcl":
     from Solvers.cdcl import cdcl
