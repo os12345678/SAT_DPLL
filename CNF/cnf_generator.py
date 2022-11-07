@@ -21,5 +21,19 @@ def generate_cnf(num_var, num_clauses):
     return filename
 
 
+def random_kcnf(n_literals, n_conjuncts, k=3):
+    result = []
+    for _ in range(n_conjuncts):
+        conj = tuple()
+        for _ in range(k):
+            index = random.randint(0, n_literals)
+            conj.add((
+                str(index).rjust(10, '0'),
+                bool(random.randint(0, 2)),
+            ))
+        result.append(conj)
+    return result
+
+
 if __name__ == "__main__":
-    generate_cnf()
+    random_kcnf()

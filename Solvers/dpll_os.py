@@ -36,6 +36,11 @@ def create_map(cnf):
     return map
 
 
+# unit propagation notes:
+# Given a partial truth assignment φ and a set of clauses F identify all the
+# unit clauses, extend the partial truth assignment, repeat until fix-point.
+
+
 def contains_unit_clause(cnf):
     unit_clause = []
     for clause in cnf:
@@ -74,10 +79,13 @@ def pure_literal_elim(cnf, map, pure_lit=[]):
 
 def dpll(cnf):
     map = create_map(cnf)
-    while contains_unit_clause(cnf):
-        unit_clause = contains_unit_clause(cnf)
-        updated_cnf = remove_unit_clause(cnf, unit_clause)
-    print("cnf after unit clause elim: ", updated_cnf)
+    for key, val in map.items():
+        print(key, val)
+    # while contains_unit_clause(cnf):
+    #     unit_clause = contains_unit_clause(cnf)
+    #     updated_cnf = remove_unit_clause(cnf, unit_clause)
+    # print("cnf after unit clause elim: ", updated_cnf)
+    return
 
     # if len(cnf) == 0:
     #     return "SAT"

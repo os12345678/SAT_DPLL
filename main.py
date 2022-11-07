@@ -26,9 +26,13 @@ else:
         cnf = dimacs_parser(f)
 
 if args.method == "dpll":
-    from Solvers.dpll_os import dpll
-    dpll_solver = dpll(cnf)
+    from Solvers.dpll_zc import recursive_dpll
+    from tests.tests import test_result
+    dpll_solver = recursive_dpll(cnf)
     print(dpll_solver)
+    pysat_result = test_result(cnf)
+    print(pysat_result)
+
 elif args.method == "cdcl":
     from Solvers.cdcl import cdcl
 elif args.method == "brute":
