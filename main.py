@@ -26,14 +26,13 @@ else:
         cnf = dimacs_parser(f)
 
 if args.method == "dpll":
-    from Solvers.dpll_update import dpll
+    from Solvers.dpll_os import dpll
     dpll_solver = dpll(cnf)
-    print("res", dpll_solver)
+    print(dpll_solver)
 elif args.method == "cdcl":
     from Solvers.cdcl import cdcl
 elif args.method == "brute":
     from Solvers.brute_force import brute_force
-    print(cnf)
     start = time.time()
     brute_solver = brute_force(cnf)
     print(time.time() - start)

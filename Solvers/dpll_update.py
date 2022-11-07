@@ -16,6 +16,26 @@
 #   choose a branching literal l
 #   return DPLL(cnf and {l}) or DPLL(cnf and {-l})
 
+def tauntology(cnf, map):
+    for clause in [c for c in cnf if len(c) == 1]:
+        x = next(iter(clause))
+        if -x in map:
+            for c in map[-x]:
+                for y in c:
+                    if y == -x:
+                        continue
+                    map[y].remove(c)
+                cnf.remove(c)
+            del map[-x]
+    return
+
+
+def select_literal(cnf):
+    for clause in cnf:
+        for lit in clause:
+            return lit[0]
+
+
 def pure_lit_elim(cnf, map):
     for var in [x for x in map if len(map[x]) == 0]:
         clause = frozenset((-var,))
@@ -23,9 +43,9 @@ def pure_lit_elim(cnf, map):
         map[-var].add(clause)
 
 
-def unit_prop(clauses, map):
+def unit_prop(cnf, map):
     solvedvars = []
-    for clause in [c for c in clauses if len(c) == 1]:
+    for clause in [c for c in cnf if len(c) == 1]:
         x = next(iter(clause))
         solvedvars.append(x)
         if not x in map:
@@ -35,11 +55,11 @@ def unit_prop(clauses, map):
                 if y == x:
                     continue
                 map[y].remove(c)
-            clauses.remove(c)
+            cnf.remove(c)
         for c in map[-x]:
             newc = c - {-x}
-            clauses.remove(c)
-            clauses.add(newc)
+            cnf.remove(c)
+            cnf.add(newc)
             for y in c:
                 if y == -x:
                     continue
@@ -51,34 +71,38 @@ def unit_prop(clauses, map):
 
 
 def getsatmap(cnf):
-    map = dict()
+    map = {}
     for clause in cnf:
-        for x in clause:
-            if x not in map:
-                map[x] = set()
-            map[x].add(clause)
+        for lit in clause:
+            if lit not in map:
+                map[lit] = set()
+            if -lit not in map:
+                map[-lit] = set()
+            map[lit].add(clause)
     return map
 
 
 def dpllr(cnf, map, solvedvars):
-    if len(cnf) == 0:
-        return True, solvedvars
-    elif any(len(clause) == 0 for clause in cnf):
-        return False, None
     while True:
         pure_lit_elim(cnf, map)
         s = unit_prop(cnf, map)
         solvedvars.extend(s)
+        if len(s) == 0:
+            break
+    if len(cnf) == 0:
+        return True, solvedvars
+    elif any(len(c) == 0 for c in cnf):
+        return False, None
         # if len(s) == 0:
         #     break
-        x = next(iter(map))
-        return dpllr(cnf and {x}, map, solvedvars + [x]) or dpllr(cnf and {-x}, map, solvedvars + [-x])
+    x = next(iter(map))
+    return dpllr(cnf and {x}, map, solvedvars + [x]) or dpllr(cnf and {-x}, map, solvedvars + [-x])
 
 
 def dpll(cnf):
+    cnf = {frozenset(c) for c in cnf}  # make immutable
     map = getsatmap(cnf)
+    print(cnf, "\n")
+    tauntology(cnf, map)
+    print(cnf, "\n")
     return dpllr(cnf, map, [])
-
-
-a = (1, 2, 3)
-print(len(a))
