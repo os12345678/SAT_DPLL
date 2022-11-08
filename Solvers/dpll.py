@@ -54,6 +54,11 @@ def get_pure_lit(cnf, lit):
     return new
 
 
+def pick_branching_literal(map):
+    maxcount = max(len(v) for v in map.values())
+    return next(k for k, v in map.items() if len(v) == maxcount)
+
+
 def dpllr(cnf, map):
     # while there is a unit clause {l} in Φ do
     #     cnf ← unit-propagate(l, cnf);
@@ -79,16 +84,22 @@ def dpllr(cnf, map):
             return False
 
     # l ← choose-literal(Φ);
-    # l = random.choice(list(map.keys()))  # todo: improve choose heuristic
-    l = cnf[0][0]
+    l = pick_branching_literal(map)  # todo: improve branching heuristic
 
     # return DPLL(Φ ∧ {l}) or DPLL(Φ ∧ {not(l)});
-    sat = dpllr(cnf + [(l,)], map)
+    print(f"setting {l} to true and recursing")
+    sat = dpll(unit_propagate(cnf, l))
     if sat:
-        return True
-    return dpllr(cnf + [(-l,)], map)
+        return sat
+    else:
+        print(f"setting {l} to false and recursing")
+        sat = dpll(unit_propagate(cnf, -l))
+        if sat:
+            return sat
+    return False
 
 
 def dpll(cnf):
     map = getsatmap(cnf)
+    print(map)
     return dpllr(cnf, map)

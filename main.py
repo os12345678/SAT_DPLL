@@ -39,25 +39,33 @@ if args.method == "dpll":
     print("actual: ", test_solver)
 
 if args.method == "dpll100":
-    from Solvers.dpll_zc import recursive_dpll
+    from Solvers.dpll import dpll
     from tests.test import test_result
     import glob
 
     failed = []
     unsat = glob.glob("CNF/examples/UUF50.218.1000/*.cnf")
     sat = glob.glob("CNF/examples/uf50-218/*.cnf")
+    i = 0
     for file in sat:
+        if i == 100:
+            break
         with open(file, "r") as f:
             random_cnf_ = dimacs_parser(f)
-        dpll_solver = recursive_dpll(random_cnf_)
+        dpll_solver = dpll(random_cnf_)
+        i += 1
         pysat_result = test_result(random_cnf_)
         if dpll_solver != pysat_result:
             failed.append(cnf)
     print(f'sat cases: {len(failed)} failed')
+    j = 0
     for file in unsat:
+        if j == 100:
+            break
         with open(file, "r") as f:
             random_cnf_ = dimacs_parser(f)
-        dpll_solver = recursive_dpll(random_cnf_)
+        dpll_solver = dpll(random_cnf_)
+        j += 1
         pysat_result = test_result(random_cnf_)
         if dpll_solver != pysat_result:
             failed.append(cnf)
