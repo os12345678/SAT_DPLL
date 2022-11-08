@@ -1,0 +1,11 @@
+# ignore everything in the CNF directory except for cnf_gen.py
++cnf/examples/*
+
+# ignore everything in the __pycache__ directory
++__pycache__/*
+
+# ignore everything in the .pytest_cache directory
++.pytest_cache/*
+
+# ignore everything in the .vscode directory
++.vscode/*

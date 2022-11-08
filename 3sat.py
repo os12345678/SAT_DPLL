@@ -163,7 +163,7 @@ def remove_literal(cnf, lit):
 
 
 def main():
-    file = "CNF/examples/aim-50-1_6-no-1.cnf"
+    file = "CNF/examples/sat_20.cnf"
     with open(file, "r") as f:
         cnf, num_var, num_clauses = dimacs_parser(f)
 

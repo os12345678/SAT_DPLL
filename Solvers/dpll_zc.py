@@ -1,70 +1,15 @@
-def __select_literal(cnf):
-    for c in cnf:
-        for literal in c:
-            return literal[0]
 
 
-# CNF = full list of clauses (tuples)
-# assignments = variable assignments
-def dpll(cnf, assignments={}):
+def compliment(assignment):
+    new = []
+    for clause in assignment:
+        new_clause = []
+        for literal in clause:
+            new_clause.append(-literal)
+        new.append(tuple(new_clause))
 
-    # [
-    #   {("p", True), ("q", False)},
-    #   {("p", True), ("r", True)}.
-    #   {("p", False), ("r", True)}
-    # ]
+    return new
 
-    # if theres no clauses, therefore true
-    if len(cnf) == 0:
-        return True, assignments
-
-    # if a clause is empty, it can't be satisfied
-    if any([len(c) == 0 for c in cnf]):
-        return False, None
-
-    # Gets first literal in the first clause -> "p"
-    l = __select_literal(cnf)
-
-   # c = {("p", True), ("q", False)}
-
-    new_cnf = [c for c in cnf if (l, True) not in c]
-
-    # for clause in cnf:
-    #     if ("p", True) not in clause:
-    #         return c
-
-    # [{("p", False), ("r", True)}]
-
-    new_cnf = [c.difference({(l, False)}) for c in new_cnf]
-
-    # # for c in new_cnf:
-    # #     return c.difference({("p", False)})
-
-    # # [{("r", True)}]
-
-    sat, vals = dpll(new_cnf, {**assignments, **{l: True}})
-    if sat:
-        return sat, vals
-
-    new_cnf = [c for c in cnf if (l, False) not in c]
-    new_cnf = [c.difference({(l, True)}) for c in new_cnf]
-    sat, vals = dpll(new_cnf, {**assignments, **{l: False}})
-    if sat:
-        return sat, vals
-
-    # if both options don't work - its unsat
-    return False, None
-
-
-# go through each literal
-# set the literal to true first
-#   extract out the clauses where p = false
-#   run the algorithm again until one of the first 2 comparisons returns (no clauses or 1 clause is empty)
-#   if an answer is found return
-# otherwise, set literal to false
-#   repeat same steps
-
-# if both options dont work, then we return False, none at the end as its unsatisfiable
 
 def recursive_dpll(clauses):
     """ function to run a backtracking dpll based algorithm
@@ -72,23 +17,17 @@ def recursive_dpll(clauses):
         clauses: list of cnf clauses in tuple form
         assigned: dictionary with variable assignments
     """
+
+    # 1. if reduced to empty set, sat
+    if len(clauses) == 0:
+        return True  # return SAT
+
     # 0. if any empty clauses exist, unsat
     for clause in clauses:
         if len(clause) == 0:
             return False
 
-    # 1. Pick a variable without an assigned truth value. If there are none, return SAT
-    if len(clauses) == 0:
-        # no more clauses, therefore all have been reduced
-        return True  # return SAT
-
-    print("clauses: ", clauses)
-    # get the first literal we see - can be optimised to find most frequent literal
-    literal = abs(clauses[0][0])
-    print("literal: ", literal)
-    # 2. Assign it a truth-value
-
-    # if we start with true, we'll need to iteratively remove all clauses with occurence of the literal
+    literal = clauses[0][0]
 
     # 3. Remove all clauses with postive literals of the variable assignment
     positive_clauses = []
@@ -97,6 +36,7 @@ def recursive_dpll(clauses):
             positive_clauses.append(clause)
 
     # 4. Remove all negative literals of the variable assignment.
+
     new = []
     for clause in positive_clauses:
         if -(literal) in clause:
@@ -105,7 +45,15 @@ def recursive_dpll(clauses):
         else:
             new.append(clause)
 
+    # print("literal:", literal)
+
+    # print("POSITIVE REDUCTION")
+    # print("prior:", positive_clauses, len(positive_clauses))
+    # print("after:", new, len(new))
     positive_clauses = new
+    # print("positive:", positive_clauses)
+    # print("new:", new)
+    # print("clauses:", clauses)
 
     # 5. Keep performing unit propogation and pure literal elimination while possible
 
@@ -126,30 +74,41 @@ def recursive_dpll(clauses):
     # 6. Check if an empty clause was created
 
     sat = recursive_dpll(positive_clauses)
+    # print("positive sat:", sat)
     if sat:
-        print("positive worked, we did it boys")
+        # print("positive worked, we did it boys")
         return sat
 
-    # 3. Remove all clauses with postive literals of the variable assignment
-    negative_clauses = []
-    for clause in clauses:
-        if -(literal) not in clause:
-            negative_clauses.append(clause)
+    # # 3. Remove all clauses with postive literals of the variable assignment
+    # negative_clauses = []
+    # for clause in clauses:
+    #     if -(literal) not in clause:
+    #         negative_clauses.append(clause)
 
-    # 4. Remove all negative literals of the variable assignment.
-    new = []
-    for clause in negative_clauses:
-        if literal in clause:
-            new.append(
-                tuple(filter(lambda item: item == -(literal), clause)))
-        else:
-            new.append(clause)
+    # # 4. Remove all negative literals of the variable assignment.
+    # new = []
+    # for clause in negative_clauses:
+    #     if literal in clause:
+    #         new.append(
+    #             tuple(filter(lambda item: item == literal, clause)))
+    #     else:
+    #         new.append(clause)
+
+    # print("NEGATIVE REDUCTION")
+    # print("prior:", nega, len(negative_clauses))
+    # print("after:", new, len(new))
+    # positive_clauses = new
+    # print("negative:", negative_clauses)
+    # print("new:", new)
+    # print("clauses:", clauses)
 
     # otherwise we need to do the literal as false
-    sat = recursive_dpll(negative_clauses)
-    if sat:
-        print("negative worked, we did it boys")
-        return sat
+    else:
+        sat = recursive_dpll(compliment(positive_clauses))
+        # print("negative sat:", sat)
+        if sat:
+            # print("negative worked, we did it boys")
+            return sat
 
     return False
 

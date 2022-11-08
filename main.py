@@ -5,7 +5,7 @@ from dimacs_parser import dimacs_parser
 parser = argparse.ArgumentParser(
     description="Solve a CNF file using a SAT solver")
 parser.add_argument("-m", "--method", help="SAT method to use",
-                    choices=["dpll", "cdcl", "brute"], required=True)
+                    choices=["dpll", "dpll100", "cdcl", "brute", "test"], required=True)
 parser.add_argument("-f", "--file", help="CNF file to solve",
                     required=False, default="random")
 args = parser.parse_args()
@@ -25,13 +25,44 @@ else:
     with open(filename, "r") as f:
         cnf = dimacs_parser(f)
 
+if args.method == "test":
+    from Solvers.dpll import dpll
+    res = dpll(cnf)
+    print(res)
+
 if args.method == "dpll":
-    from Solvers.dpll_os import dpll
+    from Solvers.dpll_zc import recursive_dpll
     from tests.test import test_result
-    dpll_solver = dpll(cnf)
-    # print(dpll_solver)
-    # pysat_result = test_result(cnf)
-    # print(pysat_result)
+    dpll_solver = recursive_dpll(cnf)
+    print("our result:", dpll_solver)
+    test_solver = test_result(cnf)
+    print("actual: ", test_solver)
+
+if args.method == "dpll100":
+    from Solvers.dpll_zc import recursive_dpll
+    from tests.test import test_result
+    import glob
+
+    failed = []
+    unsat = glob.glob("CNF/examples/UUF50.218.1000/*.cnf")
+    sat = glob.glob("CNF/examples/uf50-218/*.cnf")
+    for file in sat:
+        with open(file, "r") as f:
+            random_cnf_ = dimacs_parser(f)
+        dpll_solver = recursive_dpll(random_cnf_)
+        pysat_result = test_result(random_cnf_)
+        if dpll_solver != pysat_result:
+            failed.append(cnf)
+    print(f'sat cases: {len(failed)} failed')
+    for file in unsat:
+        with open(file, "r") as f:
+            random_cnf_ = dimacs_parser(f)
+        dpll_solver = recursive_dpll(random_cnf_)
+        pysat_result = test_result(random_cnf_)
+        if dpll_solver != pysat_result:
+            failed.append(cnf)
+    print(f'unsatsat cases: {len(failed)} failed')
+    # print(failed)
 
 elif args.method == "cdcl":
     from Solvers.cdcl import cdcl

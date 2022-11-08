@@ -34,6 +34,8 @@ def unsat(cnf, assignment):
 
 
 def pure_literal_elim(cnf, assignment):
+    # if a literal appears only in positive or negative form, remove it and all its occurrences
+
     assignment_comp = compliment(assignment)
     candidates = []
     for clause in cnf:
@@ -48,6 +50,8 @@ def pure_literal_elim(cnf, assignment):
 
 
 def unit_prop(cnf, assignment):
+    # if a clause has only one literal, remove it and all its occurrences
+
     assignment_comp = compliment(assignment)
     for clause in cnf:
         remaining = [var for var in clause if var not in assignment_comp]
@@ -69,11 +73,7 @@ def choose_branching_literal(cnf, assignment):
 
 def dpllr(cnf, assignment):
     print(cnf)
-    # base cases
-    # if len(cnf) == 0:
-    #     return True
-    # elif any([len(clause) == 0 for clause in cnf]):
-    #     return False
+
     if sat(cnf, assignment):
         return True
     elif unsat(cnf, assignment):
