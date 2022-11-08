@@ -1,101 +1,95 @@
-# DPLL algorithm
+# DPLL: wikipedia.org/wiki/DPLL_algorithm
 
-# boolean DPPL(cnf):
-# while cnf contains a unit clause {l}:
-#     delete from cnf all clauses containing l
-#     delete -l from all clauses in cnf
+# 1. Check recursive base cases
+#     1.1. if cnf is empty -> SAT
+#     1.2. if cnf contains empty clauses -> UNSAT
+# 2. Pure literal elimination
+# 3. Unit propagation
+# 4. Choose a branching literal l
+# 5. Backtrack on l and -l
 
-# if there is a clause with length 0:
-#   return False
 
-# while cnf contains a pure literal l:
-#   delete from cnf all clauses containing l
+def compliment(assignment):
+    # returns the compliment of each assignment literal (i.e -1 -> 1, 1 -> -1)
+    for lit in assignment:
+        assignment[lit] = -assignment[lit]
+    return assignment
 
-# if cnf is empty:
-#   return True
 
-# choose a branching literal l occuring in cnf
+def sat(cnf, assignment):
+    # if all clauses have at least one true literal
+    for clause in cnf:
+        if len([lit for lit in clause if lit in assignment]) == 0:
+            return False
+    return True
 
-# if DPPL(cnf or {l}) is True:
-#   return True
 
-# if DPPL(cnf or {-l}) is True:
-#   return True
+def unsat(cnf, assignment):
+    # if any clause has no true literals
+    assignment_comp = compliment(assignment)
+    for clause in cnf:
+        if len([lit for lit in clause if lit not in assignment_comp]) == 0:
+            return True
+    return False
 
-# return False
 
-def create_map(cnf):
-    map = dict()
+def unit_prop(cnf, assignment):
+    assignment_comp = compliment(assignment)
+    candidates = []
+    for clause in cnf:
+        if [len(var) for var in clause if var in assignment] == 0:
+            candidates = candidates + [var for var in clause]
+    candidates_comp = compliment(candidates)
+    pure_literals = [var for var in candidates if var not in candidates_comp]
+    for var in pure_literals:
+        if var not in assignment and var not in assignment_comp:
+            return var
+    return False
+
+
+def choose_branching_literal(cnf, assignment):
+    # choose a branching literal l not in assignment or the compliment of assignment
+    literal_not_in_assignment = assignment + compliment(assignment)
     for clause in cnf:
         for lit in clause:
-            if lit not in map:
-                map[lit] = set()
-            if -lit not in map:
-                map[-lit] = set()
-            map[lit].add(clause)
-    return map
+            if lit not in literal_not_in_assignment:
+                return lit
+    return False
 
 
-# unit propagation notes:
-# Given a partial truth assignment φ and a set of clauses F identify all the
-# unit clauses, extend the partial truth assignment, repeat until fix-point.
+def dpllr(cnf, assignment):
+    print(cnf)
+    # base cases
+    if len(cnf) == 0:
+        return True
+    elif any([len(clause) == 0 for clause in cnf]):
+        return False
 
+    # pure literal elimination
+    pure_literal = unit_prop(cnf, assignment)
+    print("pure literal: ", pure_literal)
+    if pure_literal:
+        dpllr(cnf, assignment + [pure_literal])
 
-def contains_unit_clause(cnf):
-    unit_clause = []
-    for clause in cnf:
-        if len(clause) == 1:
-            unit_clause.append(clause)
-    return unit_clause if unit_clause else False
+    # unit propagation
+    unit_literal = unit_prop(cnf, assignment)
+    print("unit literal: ", unit_literal)
+    if unit_literal:
+        dpllr(cnf, assignment + [unit_literal])
 
+    # choose branching literal
+    branching_literal = choose_branching_literal(cnf, assignment)
+    print("branching literal: ", branching_literal)
+    if branching_literal:
+        print("assignment + [branching_literal]: ",
+              assignment + [branching_literal])
+        dpllr(cnf, assignment + [branching_literal])
+        dpllr(cnf, assignment + [compliment(branching_literal)])
 
-def remove_unit_clause(cnf, unit_clause):
-    # delete from cnf all clauses containing l
-    # delete -l from all clauses in cnf
-    for unit in unit_clause:
-        for litu in unit:
-            for clause in cnf:
-                for litc in clause:
-                    if litc == litu:
-                        print(litc)
-                        break
-                    break
-                break
-            break
-        break
+    # return False
 
-
-def pure_literal_elim(cnf, map, pure_lit=[]):
-    for key, value in map.items():
-        if len(value) == 1:  # pure literal
-            # delete from cnf all clauses containing key
-            pure_lit.append(key)
-    for clause in [c for c in cnf]:
-        for lit in clause:
-            if lit in pure_lit:
-                cnf.remove(clause)
-    return cnf
+    # backtracking
 
 
 def dpll(cnf):
-    map = create_map(cnf)
-    for key, val in map.items():
-        print(key, val)
-    # while contains_unit_clause(cnf):
-    #     unit_clause = contains_unit_clause(cnf)
-    #     updated_cnf = remove_unit_clause(cnf, unit_clause)
-    # print("cnf after unit clause elim: ", updated_cnf)
-    return
-
-    # if len(cnf) == 0:
-    #     return "SAT"
-    # elif any(len(c) == 0 for c in cnf):
-    #     return "UNSAT"
-
-    # while pure_literal_elim(cnf, map):
-    #     pure_literal_elim(cnf, map)
-
-    # branch_lit = next(iter(cnf))
-    # return dpll(cnf | {branch_lit}) or dpll(cnf | {-branch_lit})
-
-    # return
+    return dpllr(cnf, [])

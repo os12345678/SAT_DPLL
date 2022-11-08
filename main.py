@@ -26,7 +26,7 @@ else:
         cnf = dimacs_parser(f)
 
 if args.method == "dpll":
-    from Solvers.dpll_os_new import dpll
+    from Solvers.dpll_os import dpll
     from tests.test import test_result
     dpll_solver = dpll(cnf)
     # print(dpll_solver)
