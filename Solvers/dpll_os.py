@@ -11,8 +11,8 @@
 
 def compliment(assignment):
     # returns the compliment of each assignment literal (i.e -1 -> 1, 1 -> -1)
-    for lit in assignment:
-        assignment[lit] = -assignment[lit]
+    for i, lit in enumerate(assignment):
+        assignment[i] = -lit
     return assignment
 
 
@@ -33,17 +33,27 @@ def unsat(cnf, assignment):
     return False
 
 
-def unit_prop(cnf, assignment):
+def pure_literal_elim(cnf, assignment):
     assignment_comp = compliment(assignment)
     candidates = []
     for clause in cnf:
-        if [len(var) for var in clause if var in assignment] == 0:
+        if len([var for var in clause if var in assignment]) == 0:
             candidates = candidates + [var for var in clause]
     candidates_comp = compliment(candidates)
     pure_literals = [var for var in candidates if var not in candidates_comp]
     for var in pure_literals:
         if var not in assignment and var not in assignment_comp:
             return var
+    return False
+
+
+def unit_prop(cnf, assignment):
+    assignment_comp = compliment(assignment)
+    for clause in cnf:
+        remaining = [var for var in clause if var not in assignment_comp]
+        if len(remaining) == 1:
+            if remaining[0] not in assignment:
+                return remaining[0]
     return False
 
 
@@ -60,13 +70,17 @@ def choose_branching_literal(cnf, assignment):
 def dpllr(cnf, assignment):
     print(cnf)
     # base cases
-    if len(cnf) == 0:
+    # if len(cnf) == 0:
+    #     return True
+    # elif any([len(clause) == 0 for clause in cnf]):
+    #     return False
+    if sat(cnf, assignment):
         return True
-    elif any([len(clause) == 0 for clause in cnf]):
+    elif unsat(cnf, assignment):
         return False
 
     # pure literal elimination
-    pure_literal = unit_prop(cnf, assignment)
+    pure_literal = pure_literal_elim(cnf, assignment)
     print("pure literal: ", pure_literal)
     if pure_literal:
         dpllr(cnf, assignment + [pure_literal])
@@ -83,10 +97,16 @@ def dpllr(cnf, assignment):
     if branching_literal:
         print("assignment + [branching_literal]: ",
               assignment + [branching_literal])
-        dpllr(cnf, assignment + [branching_literal])
-        dpllr(cnf, assignment + [compliment(branching_literal)])
-
-    # return False
+        # backtrack on l or -l
+        result = dpllr(cnf, assignment + [branching_literal])
+        if result:
+            return result
+        else:
+            result = dpllr(cnf, assignment + [-branching_literal])
+            if result:
+                return result
+            else:
+                return False
 
     # backtracking
 
