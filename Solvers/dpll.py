@@ -1,6 +1,3 @@
-import random
-
-
 def getsatmap(cnf):
     map = {}
     for clause in cnf:
@@ -11,10 +8,6 @@ def getsatmap(cnf):
                 map[-lit] = set()
             map[lit].add(clause)
     return map
-
-
-def is_int(clause):
-    return type(clause) == int
 
 
 def contains_unit_clause(cnf):
@@ -59,41 +52,61 @@ def pick_branching_literal(map):
     return next(k for k, v in map.items() if len(v) == maxcount)
 
 
+def standardise(cnf, lit):
+    # remove all clauses that contain the literal
+    positive_clauses = []
+    for clause in cnf:
+        if lit not in clause:
+            positive_clauses.append(clause)
+
+    # remove all negative literals of the variable assignment.
+    new = []
+    for clause in positive_clauses:
+        if -(lit) in clause:
+            new.append(
+                tuple(filter(lambda item: item != -(lit), clause)))
+        else:
+            new.append(clause)
+
+    return new
+
+
+# DPPL: https://en.wikipedia.org/wiki/DPLL_algorithm
+
+
 def dpllr(cnf, map):
     # while there is a unit clause {l} in Φ do
     #     cnf ← unit-propagate(l, cnf);
     unit = contains_unit_clause(cnf)
-    print("unit", unit)
     while unit:
         cnf = unit_propagate(cnf, unit)
-
-    # while there is a literal l that occurs pure in Φ do
-    #     Φ ← pure-literal-assign(l, Φ);
-    pure = contains_pure(map)
-    print("pure", pure)
-    while pure:
-        cnf = get_pure_lit(cnf, pure)
-
-    # if Φ is empty then return true;
-    if len(cnf) == 0:
-        return True
 
     # if Φ contains an empty clause then return false;
     for clause in cnf:
         if len(clause) == 0:
             return False
 
+    # while there is a literal l that occurs pure in Φ do
+    #     Φ ← pure-literal-assign(l, Φ);
+    pure = contains_pure(map)
+    # print("pure", pure)
+    while pure:
+        cnf = get_pure_lit(cnf, pure)
+
+    # if Φ is empty then return true;
+    if len(cnf) == 0:
+        # print("cnf: ", cnf)
+        return True
+
     # l ← choose-literal(Φ);
     l = pick_branching_literal(map)  # todo: improve branching heuristic
 
     # return DPLL(Φ ∧ {l}) or DPLL(Φ ∧ {not(l)});
-    print(f"setting {l} to true and recursing")
-    sat = dpll(unit_propagate(cnf, l))
+    sat = dpll(standardise(cnf, l))
     if sat:
         return sat
     else:
-        print(f"setting {l} to false and recursing")
-        sat = dpll(unit_propagate(cnf, -l))
+        sat = dpll(standardise(cnf, -l))
         if sat:
             return sat
     return False
@@ -101,5 +114,4 @@ def dpllr(cnf, map):
 
 def dpll(cnf):
     map = getsatmap(cnf)
-    print(map)
     return dpllr(cnf, map)

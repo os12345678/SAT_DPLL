@@ -31,9 +31,9 @@ if args.method == "test":
     print(res)
 
 if args.method == "dpll":
-    from Solvers.dpll_zc import recursive_dpll
+    from Solvers.dpll import dpll
     from tests.test import test_result
-    dpll_solver = recursive_dpll(cnf)
+    dpll_solver = dpll(cnf)
     print("our result:", dpll_solver)
     test_solver = test_result(cnf)
     print("actual: ", test_solver)
@@ -48,32 +48,37 @@ if args.method == "dpll100":
     sat = glob.glob("CNF/examples/uf50-218/*.cnf")
     i = 0
     for file in sat:
-        if i == 100:
+        if i == 5:
             break
         with open(file, "r") as f:
             random_cnf_ = dimacs_parser(f)
         dpll_solver = dpll(random_cnf_)
+        print("our result:", dpll_solver)
         i += 1
         pysat_result = test_result(random_cnf_)
+        print("actual result: ", pysat_result)
         if dpll_solver != pysat_result:
             failed.append(cnf)
     print(f'sat cases: {len(failed)} failed')
     j = 0
     for file in unsat:
-        if j == 100:
+        if j == 5:
             break
         with open(file, "r") as f:
             random_cnf_ = dimacs_parser(f)
         dpll_solver = dpll(random_cnf_)
+        print("our resutl:", dpll_solver)
         j += 1
         pysat_result = test_result(random_cnf_)
-        if dpll_solver != pysat_result:
+        print("actual result:", pysat_result)
+        if str(dpll_solver) != str(pysat_result):
             failed.append(cnf)
-    print(f'unsatsat cases: {len(failed)} failed')
+    print(f'unsat cases: {len(failed)} failed')
     # print(failed)
 
-elif args.method == "cdcl":
-    from Solvers.cdcl import cdcl
+# elif args.method == "cdcl":
+#     from Solvers.cdcl import cdcl
+#     cdcl_solver = cdcl(cnf)
 elif args.method == "brute":
     from Solvers.brute_force import brute_force
     start = time.time()
