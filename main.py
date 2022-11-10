@@ -1,11 +1,17 @@
 import argparse
 import time
 from dimacs_parser import dimacs_parser
+import random
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import pylab as plt
+
 
 parser = argparse.ArgumentParser(
     description="Solve a CNF file using a SAT solver")
 parser.add_argument("-m", "--method", help="SAT method to use",
-                    choices=["dpll", "dpll100", "cdcl", "brute", "test"], required=True)
+                    choices=["dpll", "dpll100", "brute", "compare"], required=True)
 parser.add_argument("-f", "--file", help="CNF file to solve",
                     required=False, default="random")
 args = parser.parse_args()
@@ -25,18 +31,54 @@ else:
     with open(filename, "r") as f:
         cnf = dimacs_parser(f)
 
-if args.method == "test":
-    from Solvers.dpll import dpll
-    res = dpll(cnf)
-    print(res)
-
 if args.method == "dpll":
     from Solvers.dpll import dpll
     from tests.test import test_result
     dpll_solver = dpll(cnf)
     print("our result:", dpll_solver)
     test_solver = test_result(cnf)
-    print("actual: ", test_solver)
+    print("actual result: ", test_solver)
+
+if args.method == "compare":
+    from Solvers.brute_force import brute_force
+    from Solvers.dpll import dpll
+    import CNF.cnf_generator as cnf_generator
+
+    brute_force_times = []
+    dpll_times = []
+    for n_literals in range(16):
+        current_brute_force_times = []
+        current_dpll_times = []
+        for _ in range(100):
+            n_conjuncts = random.randint(0, n_literals*6)
+            filename = cnf_generator.generate_cnf(
+                n_literals, n_conjuncts)
+            with open(filename, "r") as f:
+                s = dimacs_parser(f)
+
+            start = time.time()
+            brute_force(s)
+            stop = time.time()
+            current_brute_force_times.append(stop-start)
+            start = time.time()
+            dpll(s)
+            stop = time.time()
+            current_dpll_times.append(stop-start)
+
+        brute_force_times.append(np.mean(current_brute_force_times))
+        dpll_times.append(np.mean(current_dpll_times))
+
+    df = pd.DataFrame(
+        {'Number of literals': range(16),
+         'Brute Force': brute_force_times,
+         'DPLL': dpll_times
+         }
+    )
+    sns.set()
+    viz = df.plot(x='Number of literals')
+    viz.set_ylabel("Time (Seconds)")
+    plt.show()
+
 
 if args.method == "dpll100":
     from Solvers.dpll import dpll
