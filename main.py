@@ -7,6 +7,7 @@ import numpy as np
 import seaborn as sns
 import pylab as plt
 
+# Zach was here ;)
 
 parser = argparse.ArgumentParser(
     description="Solve a CNF file using a SAT solver")
