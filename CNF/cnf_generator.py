@@ -13,28 +13,9 @@ def generate_cnf(num_var, num_clauses):
         for i in range(num_clauses):
             # Generate a random clause
             clause = [random.randint(1, num_var)
-                      for i in range(3)]
+                      for _ in range(3)]
             # Randomly negate a literal
-            clause[random.randint(0, 2)] *= -1
+            clause[random.randint(1, 2)] *= -1
             f.write(f"{clause[0]} {clause[1]} {clause[2]} 0 \n")
 
     return filename
-
-
-def random_kcnf(n_literals, n_conjuncts, k=3):
-    result = []
-    for _ in range(n_conjuncts):
-        conj = tuple()
-        for _ in range(k):
-            index = random.randint(0, n_literals)
-            conj.add((
-                str(index).rjust(10, '0'),
-                bool(random.randint(0, 4)),
-            ))
-        result.append(conj)
-    return result
-
-
-if __name__ == "__main__":
-    # generate_cnf()
-    random_kcnf()

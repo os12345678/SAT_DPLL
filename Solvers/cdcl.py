@@ -1,1 +1,0 @@
-# SAT solver: CDCL algorithm

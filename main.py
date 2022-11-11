@@ -24,18 +24,17 @@ else:
     import CNF.cnf_generator as cnf_generator
     print("Please enter [num_variables] [num_clauses]: ", end="")
     num_var, num_clauses = map(int, input().split())
-
     filename = cnf_generator.generate_cnf(
         num_var, num_clauses)
-
     with open(filename, "r") as f:
         cnf = dimacs_parser(f)
 
 if args.method == "dpll":
     from Solvers.dpll import dpll
     from tests.test import test_result
-    dpll_solver = dpll(cnf)
+    dpll_solver, assignments = dpll(cnf)
     print("our result:", dpll_solver)
+    print("our assignments:", assignments)
     test_solver = test_result(cnf)
     print("actual result: ", test_solver)
 
@@ -54,14 +53,14 @@ if args.method == "compare":
             filename = cnf_generator.generate_cnf(
                 n_literals, n_conjuncts)
             with open(filename, "r") as f:
-                s = dimacs_parser(f)
+                cnf = dimacs_parser(f)
 
             start = time.time()
-            brute_force(s)
+            brute_force(cnf)
             stop = time.time()
             current_brute_force_times.append(stop-start)
             start = time.time()
-            dpll(s)
+            dpll(cnf)
             stop = time.time()
             current_dpll_times.append(stop-start)
 

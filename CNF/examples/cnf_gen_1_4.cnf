@@ -1,6 +1,6 @@
 c User generated cnf file
 p cnf 1 4
-1 1 -1 0 
-1 1 -1 0 
 1 -1 1 0 
--1 1 1 0 
+1 -1 1 0 
+1 -1 1 0 
+1 1 -1 0 

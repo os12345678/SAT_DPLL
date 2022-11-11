@@ -52,66 +52,51 @@ def pick_branching_literal(map):
     return next(k for k, v in map.items() if len(v) == maxcount)
 
 
-def standardise(cnf, lit):
-    # remove all clauses that contain the literal
-    positive_clauses = []
-    for clause in cnf:
-        if lit not in clause:
-            positive_clauses.append(clause)
-
-    # remove all negative literals of the variable assignment.
-    new = []
-    for clause in positive_clauses:
-        if -(lit) in clause:
-            new.append(
-                tuple(filter(lambda item: item != -(lit), clause)))
-        else:
-            new.append(clause)
-
-    return new
+def reduce_cnf(cnf, lit):
+    return get_pure_lit(unit_propagate(cnf, lit), -lit)
 
 
-# DPPL: https://en.wikipedia.org/wiki/DPLL_algorithm
-
-
-def dpllr(cnf, map):
+def dpllr(cnf, map, values):
     # while there is a unit clause {l} in Φ do
     #     cnf ← unit-propagate(l, cnf);
     unit = contains_unit_clause(cnf)
+
     while unit:
         cnf = unit_propagate(cnf, unit)
-
-    # if Φ contains an empty clause then return false;
-    for clause in cnf:
-        if len(clause) == 0:
-            return False
 
     # while there is a literal l that occurs pure in Φ do
     #     Φ ← pure-literal-assign(l, Φ);
     pure = contains_pure(map)
-    # print("pure", pure)
     while pure:
         cnf = get_pure_lit(cnf, pure)
 
     # if Φ is empty then return true;
     if len(cnf) == 0:
-        # print("cnf: ", cnf)
-        return True
+        return True, values
+
+    # if Φ contains an empty clause then return false;
+    for clause in cnf:
+        if len(clause) == 0:
+            return False, values
 
     # l ← choose-literal(Φ);
     l = pick_branching_literal(map)  # todo: improve branching heuristic
 
     # return DPLL(Φ ∧ {l}) or DPLL(Φ ∧ {not(l)});
-    sat = dpll(standardise(cnf, l))
+    # replace every occurrence of l with "true" and every occurrence of not l with "false" in the formula Φ, and simplify the resulting formula
+    # test with literal set to true
+    sat, values = dpll(reduce_cnf(cnf, l), {**values, **{l: True}})
     if sat:
-        return sat
-    else:
-        sat = dpll(standardise(cnf, -l))
-        if sat:
-            return sat
-    return False
+        return sat, values
+
+    # otherwise test with literal set to false
+    sat, values = dpll(reduce_cnf(cnf, l), {**values, **{l: False}})
+    if sat:
+        return sat, values
+
+    return False, values
 
 
-def dpll(cnf):
+def dpll(cnf, values={}):
     map = getsatmap(cnf)
-    return dpllr(cnf, map)
+    return dpllr(cnf, map, values)
