@@ -1,4 +1,4 @@
-# Advanced-Algorithms-Assignment-3: 3SAT Problem
+# 3SAT solver
 
 A simple implementation of a (3)SAT solver using an (unoptimized) implementation of DPLL
 
